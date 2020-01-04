@@ -1,6 +1,6 @@
 <template>
     <div>
-        评论管理
+        
         <!-- 按钮 -->
         <el-button type="success" size="small" @click="toAddHandler">
             添加
