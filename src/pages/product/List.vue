@@ -31,7 +31,12 @@
                 <el-input v-model="form.description"/>
             </el-form-item>
             <el-form-item label="所属产品">
-                <el-input v-model="form.categoryId"/>
+                <el-select v-model="form.categoryId">
+                  <el-option v-for="item in options"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"></el-option>
+                </el-select>
             </el-form-item>
         </el-form>
     <span slot="footer" class="dialog-footer">
@@ -51,6 +56,7 @@ export default {
             title:"录入产品信息",
             visible:false,
             products:[],
+            options:[],
             form:{
                 type:"product"
             }
@@ -59,8 +65,15 @@ export default {
     created(){
         // 在页面加载出来的时候加载数据
         this.loadData();
+        this.loadCategory();
     },
     methods:{
+      loadCategory(){
+            let url = "http://localhost:6677/category/findAll"
+            request.get(url).then((response)=>{
+                this.options=response.data;
+            })
+        },
         submitHandler(){
             let url = "http://localhost:6677/product/saveOrUpdate";
             // 前端向后台发送请求，完成数据的保存的操作
