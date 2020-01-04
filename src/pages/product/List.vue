@@ -46,12 +46,12 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item label="所属栏目">
-                    <el-select v-model="form.status" placeholder="请选择">
+                    <el-select v-model="form.categoryId" placeholder="请选择">
                         <el-option
                         v-for="item in options"
-                        :key="item.value"
+                        :key="item.id"
                         :label="item.name"
-                        :value="item.parentId">
+                        :value="item.id">
                         </el-option>
                     </el-select>
                     </el-form-item>
