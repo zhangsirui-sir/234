@@ -5,9 +5,9 @@
     <el-button type="danger" size="small">删除订单</el-button>
     <!-- /按钮 -->
     <!-- 表格 -->
-    <el-table :data="order">
+    <el-table :data="orders.list">
       <el-table-column prop="id" label="订单编号"></el-table-column>
-      <el-table-column prop="orderTime" label="下单时间"></el-table-column>
+      <el-table-column prop="orderTime" width="200" label="下单时间"></el-table-column>
       <el-table-column prop="waiterId" label="服务编号"></el-table-column>
       <el-table-column prop="total" label="总价"></el-table-column>
       <el-table-column prop="status" label="状态"></el-table-column>
@@ -22,7 +22,7 @@
     </el-table>
     <!-- /表格结束 -->
     <!-- 分页开始 -->
-    <el-pagination layout="prev, pager, next" :total="50"></el-pagination>
+    <el-pagination layout="prev, pager, next" :total="orders.total" @current-change="pageChangeHandler"></el-pagination>
     <!-- /分页结束 -->
     <!-- 模态框 -->
     <el-dialog
@@ -32,7 +32,7 @@
         ---{{form}}
       <el-form :model="form" label-width="80px">
         <el-form-item label="顾客编号">
-          <el-input v-model="form.customerId"></el-input>
+          <el-input v-model="form.orderId"></el-input>
         </el-form-item>
         <el-form-item label="服务编号">
           <el-input v-model="form.waiterId"></el-input>
@@ -58,18 +58,30 @@ import querystring from 'querystring'
 export default {
   // 用于存放网页中需要调用的方法
   methods:{
+    //当分页中当前页改变的时候执行
+    pageChangeHandler(page){
+      this.params.page=page-1;
+      this.loadData();
+    },
     loadData(){
-      let url = "http://localhost:6677/order/findAll"
-      request.get(url).then((response)=>{
-        // 将查询结果设置到customers中，this指向外部函数的this
-        this.order = response.data;
+      let url = "http://localhost:6677/order/queryPage"
+      request({
+        url,
+        method:"post",
+        headers:{
+          "Content-Type":"application/x-www-form-urlencoded"
+        },
+        data:querystring.stringify(this.params)
+      }).then((response)=>{
+        //order提供列表对象，其中包含了一个信息
+        this.orders=response.data;
       })
     },
     submitHandler(){
-      //this.form 对象 ---字符串--> 后台 {type:'customer',age:12}
-      // json字符串 '{"type":"customer","age":12}'
+      //this.form 对象 ---字符串--> 后台 {type:'order',age:12}
+      // json字符串 '{"type":"order","age":12}'
       // request.post(url,this.form)
-      // 查询字符串 type=customer&age=12
+      // 查询字符串 type=order&age=12
       // 通过request与后台进行交互，并且要携带参数
       let url = "http://localhost:6677/order/save";
       request({
@@ -131,9 +143,13 @@ export default {
   data(){
     return {
       visible:false,
-      order:[],
+      orders:{},
       form:{
         type:"order"
+      },
+      params:{
+        page:0,
+        pageSize:10
       }
     }
   },
