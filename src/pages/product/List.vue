@@ -1,49 +1,94 @@
 <template>
+    
     <div>
-        <el-button type="primary" size="small"  @click="toAddHandler">添加</el-button>
-        <el-button type="danger" size="small">批量删除</el-button>
-
-        <el-table :data="products">
+        <el-button  type="button"  size="small" @click="toAddHandler" >
+            添加
+        </el-button>
+        <el-button type="danger" size="small">
+            批量删除
+        </el-button>
+       
+        <el-table :data="product">
             <el-table-column prop="id" label="编号"></el-table-column>
             <el-table-column prop="name" label="产品名称"></el-table-column>
             <el-table-column prop="price" label="价格"></el-table-column>
             <el-table-column prop="description" label="描述"></el-table-column>
             <el-table-column prop="categoryId" label="所属产品"></el-table-column>
-            <el-table-column fixed="right" label="操作">
-                <template v-slot="slot">
-                    <a href="" @click.prevent="toDeleteHandler(slot.row.id)">删除</a>
-                    <a href="" @click.prevent="toUpdateHandler(slot.row)">修改</a>
-                </template>
+            <el-table-column label="操作">
+               <template v-slot="slot">
+                   <a href="" @click.prevent="toDeleteHandler(slot.row.id)">删除</a>
+                   <a href="" @click.prevent="toUpdateHandler(slot.row)">修改</a>
+                    <a href="" @click.prevent="">详情</a>
+               </template>
             </el-table-column>
+            
         </el-table>
-        <el-pagination layout="prev, pager, next" :total="50"> 
-        </el-pagination>
-<el-dialog :title="title" :visible.sync="visible" width="60%" >
-        {{form}}
-        <el-form  :model="form" width="80px">
-            <el-form-item label="产品名称">
-                <el-input v-model="form.name"/>
-            </el-form-item>
-            <el-form-item label="价格">
-                <el-input v-model="form.price"/>
-            </el-form-item>
-            <el-form-item label="描述">
-                <el-input v-model="form.description"/>
-            </el-form-item>
-            <el-form-item label="所属产品">
-                <el-select v-model="form.categoryId">
-                  <el-option v-for="item in options"
-                  :key="item.id"
-                  :label="item.name"
-                  :value="item.id"></el-option>
-                </el-select>
-            </el-form-item>
-        </el-form>
-    <span slot="footer" class="dialog-footer">
-        <el-button  size="small" @click="closeModalHandler">取消</el-button>
-        <el-button size="small" type="primary" @click="submitHandler">确定</el-button>
-    </span>
-</el-dialog>      
+        <el-pagination
+    layout="prev, pager, next"
+    :total="50">
+  </el-pagination>
+        <el-dialog
+                :title="title"
+                :visible.sync="visible"
+                width="60%" >
+               
+                <el-form :model="form" label-width="80px">
+                     <el-form-item label="名称">
+                        <el-input  v-model="form.name">
+
+                        </el-input>
+                    </el-form-item>
+
+                
+                    <el-form-item label="价格">
+                        <el-input  v-model="form.price">
+
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="所属栏目">
+                    <el-select v-model="form.status" placeholder="请选择">
+                        <el-option
+                        v-for="item in options"
+                        :key="item.value"
+                        :label="item.name"
+                        :value="item.parentId">
+                        </el-option>
+                    </el-select>
+                    </el-form-item>
+
+                <el-form-item label="介绍">
+                    <el-input
+                        type="textarea"
+                        :rows="2"
+                        placeholder="请输入内容"
+                        v-model="form.description">
+                    </el-input>
+
+                </el-form-item>
+
+
+                <el-form-item label="上传图片">
+                    <el-upload
+                            class="upload-demo"
+                            action="https://jsonplaceholder.typicode.com/posts/"
+                            :on-preview="handlePreview"
+                            :on-remove="handleRemove"
+                            :before-remove="beforeRemove"
+                            multiple
+                            :limit="3"
+                            :on-exceed="handleExceed"
+                            :file-list="fileList">
+                            <el-button size="small" type="primary">点击上传</el-button>
+                            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                    </el-upload>
+                    </el-form-item>
+                </el-form>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="closeModalHandler" size="small">取 消</el-button>
+                    <el-button type="primary" @click="submitHandler" size="small">确 定</el-button>
+
+                </span>
+            </el-dialog>
     </div>
 </template>
 
@@ -51,93 +96,112 @@
 import request from '@/utils/request'
 import querystring from 'querystring'
 export default {
-    data(){
-        return{
-            title:"录入产品信息",
-            visible:false,
-            products:[],
-            options:[],
-            form:{
-                type:"product"
-            }
-        }
-    },
-    created(){
-        // 在页面加载出来的时候加载数据
-        this.loadData();
-        this.loadCategory();
-    },
     methods:{
-      loadCategory(){
+        loadData(){
+            let url="http://localhost:6677/product/findAll"
+        request.get(url).then((response)=>{
+            //this指向外部函数的this
+            this.product=response.data;
+        })
+        },
+         loadData2(){
+            let url="http://localhost:6677/category/findAll"
+        request.get(url).then((response)=>{
+            //this指向外部函数的this
+            this.options=response.data;
+        })
+        },
+         toAddHandler(){
             let url = "http://localhost:6677/category/findAll"
             request.get(url).then((response)=>{
-                this.options=response.data;
+                this.options = response.data;
             })
-        },
-        submitHandler(){
-            let url = "http://localhost:6677/product/saveOrUpdate";
-            // 前端向后台发送请求，完成数据的保存的操作
-            request({
-                url,
-                method:"post",
-                // 告诉后台请求体中放的是查询字符串
-                headers:{
-                    "Content-Type":"application/x-www-form-urlencoded"
-                },
-                data:querystring.stringify(this.form)
-            }).then((response)=>{
-                //请求结束，模态框关闭
-                this.closeModalHandler();
-                this.loadData();
-                //提示消息
-                this.$message({type:"success",message:response.message})
-            })
-        },
-        // 重载产品数据
-        loadData(){
-            let url = "http://localhost:6677/product/findAll"
-            request.get(url).then((response)=>{
-                this.products=response.data;
-            })
+            this.form={
+                type:"product"
+            }
+            this.title="添加产品信息",
+            this.visible=true;
+            
         },
         closeModalHandler(){
             this.visible=false;
         },
-        toAddHandler(){
-            // 用于初始化添加栏信息
-            this.form={
-              type:"product"
-            }
-            this.title="添加产品信息";
+          toUpdateHandler(row){
+            let url = "http://localhost:6677/category/findAll"
+            request.get(url).then((response)=>{
+                this.options = response.data;
+            })
+            this.title="修改产品信息",
+             this.form=row;
             this.visible=true;
         },
+        submitHandler(){
+                //与后台进行交互
+                let url="http://localhost:6677/product/saveOrUpdate";
+                // request.post(url,this.form)
+                request({
+                    //小括号方法调用
+                    url,
+                    method:"Post",
+                    headers:{
+                        //查询字符串 type=customer&age=12
+                        //通过request与后台交互
+                        "Content-Type":"application/x-www-form-urlencoded"
+                    },
+                    data:querystring.stringify(this.form)
+                }).then((response)=>{
+
+                    this.closeModalHandler();
+                    this.loadData();
+                    this.$message({
+                        type:"success",
+                        message:response.message
+                    })
+                })
+        },
+        
         toDeleteHandler(id){
-            //确认
-            this.$confirm('此操作将永久删除该产品, 是否继续?', '提示', {
+             this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-            let url="http://localhost:6677/product/deleteById?id="+id
+          //调用后台接口，实现删除
+            let url="http://localhost:6677/product/deleteById?id="+id;
             request.get(url).then((response)=>{
-            this.loadData();
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          });
+                //刷新页面
+                this.loadData();
+                //提示信息
+                this.$message({
+   
+                    type: 'success',
+                    message: '删除成功!'+id
+                });
             })
         })
-        },
-        toUpdateHandler(row){
-            this.form=row;
-            // 获取当前行信息
-            this.title="修改产品信息";
-            this.visible=true
         }
     },
+    data(){
+        //用于存放要向网页中显示的数据
+        return{
+            visible:false,
+            title:"录入栏目信息",
+            product:[
+             
+            ],
+           
+            options:[],
+            form:{
+                type:"product"
+            }
+          
+        }
+    },
+    created(){
+        this.loadData();
+    }
 }
 </script>
-
 <style scoped>
 
 </style>
