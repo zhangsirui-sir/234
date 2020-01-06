@@ -14,6 +14,7 @@
             <el-table-column prop="price" label="价格"></el-table-column>
             <el-table-column prop="description" label="描述"></el-table-column>
             <el-table-column prop="categoryId" label="所属产品"></el-table-column>
+            <el-table-column prop="photo" label="照片"></el-table-column>
             <el-table-column label="操作">
                <template v-slot="slot">
                    <a href="" @click.prevent="toDeleteHandler(slot.row.id)">删除</a>
@@ -67,22 +68,19 @@
                 </el-form-item>
 
 
-                <el-form-item label="上传图片">
+                <el-form-item label="图片">
                     <el-upload
-                            class="upload-demo"
-                            action="https://jsonplaceholder.typicode.com/posts/"
-                            :on-preview="handlePreview"
-                            :on-remove="handleRemove"
-                            :before-remove="beforeRemove"
-                            multiple
-                            :limit="3"
-                            :on-exceed="handleExceed"
-                            :file-list="fileList">
-                            <el-button size="small" type="primary">点击上传</el-button>
-                            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                        class="upload-demo"
+                        action="http://134.175.154.93:6677/file/upload"
+                        :file-list="fileList"
+                        :on-success="uploadSuccessHandler"
+                        list-type="picture">
+                        <el-button size="small" type="primary">点击上传</el-button>
+                        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
                     </el-upload>
                     </el-form-item>
                 </el-form>
+                
                 <span slot="footer" class="dialog-footer">
                     <el-button @click="closeModalHandler" size="small">取 消</el-button>
                     <el-button type="primary" @click="submitHandler" size="small">确 定</el-button>
@@ -126,7 +124,7 @@ export default {
         closeModalHandler(){
             this.visible=false;
         },
-          toUpdateHandler(row){
+        toUpdateHandler(row){
             let url = "http://localhost:6677/category/findAll"
             request.get(url).then((response)=>{
                 this.options = response.data;
@@ -175,10 +173,17 @@ export default {
                 this.$message({
    
                     type: 'success',
-                    message: '删除成功!'+id
+                    message: '删除成功!'
                 });
             })
         })
+        },
+        // 上传成功的事件处理函数
+        uploadSuccessHandler(response){
+            let photo= "http://134.175.154.93:8888/group1/"+response.data.id
+            // 将图片地址设置到form中，便于一起提交给后台
+            this.form.photo=photo
+
         }
     },
     data(){
@@ -193,7 +198,8 @@ export default {
             options:[],
             form:{
                 type:"product"
-            }
+            },
+            fileList:[],
           
         }
     },
