@@ -10,7 +10,7 @@
        
         <el-table :data="product">
             <el-table-column prop="id" label="编号"></el-table-column>
-            <el-table-column prop="name" label="产品名称"></el-table-column>
+            <el-table-column prop="name" label="产品名称" width="200px"></el-table-column>
             <el-table-column prop="price" label="价格"></el-table-column>
             <el-table-column prop="description" label="描述"></el-table-column>
             <el-table-column prop="categoryId" label="所属产品"></el-table-column>
